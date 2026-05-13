@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture; 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -21,6 +22,11 @@ public class LamentiaGame extends ApplicationAdapter {
     OrthographicCamera camera;
     Viewport viewport;
     
+    // --- VARIABEL MULTI-BACKGROUND ---
+    Texture backgroundTexture1;
+    Texture backgroundTexture2;
+    Texture currentBackground; // Menentukan mana yang sedang digambar
+
     // Daftar Dialog
     String[] dialogues = {
         "Faiz: 'Selamat datang di dunia Lamentia, tempat di mana takdir bisa ditulis ulang...'",
@@ -42,9 +48,16 @@ public class LamentiaGame extends ApplicationAdapter {
         font = new BitmapFont();
         font.getData().setScale(1.5f);
 
+        // --- LOAD BACKGROUNDS DARI FOLDER ---
+        // Menggunakan nama file sesuai screenshot kamu di image_5578fe.png
+        backgroundTexture1 = new Texture("sumber_daya_background/Screenshot 2026-05-13 145716.png");
+        backgroundTexture2 = new Texture("sumber_daya_background/Screenshot 2026-05-13 133833.png");
+        
+        // Default awal pakai background 1
+        currentBackground = backgroundTexture1;
+
         // --- INISIALISASI CAMERA & VIEWPORT ---
         camera = new OrthographicCamera();
-        // Kita gunakan kanvas virtual 1280x720 (16:9)
         viewport = new FitViewport(1280, 720, camera);
         viewport.apply();
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
@@ -83,26 +96,35 @@ public class LamentiaGame extends ApplicationAdapter {
 
     @Override
     public void render() {
-        ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
+        ScreenUtils.clear(0, 0, 0, 1);
 
-        // --- UPDATE CAMERA & VIEWPORT ---
         camera.update();
-        // Beritahu batch dan shapeRenderer untuk menggunakan camera kita
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-        // --- VARIABEL DINAMIS BERDASARKAN UKURAN VIRTUAL ---
         float virtualWidth = viewport.getWorldWidth();
         float virtualHeight = viewport.getWorldHeight();
         
-        // Hitungan kotak berdasarkan ukuran virtual 1280x720
-        float boxHeight = virtualHeight * 0.25f; // Kotak tingginya 25% dari layar
-        float boxMargin = 30; // Jarak dari pinggir
-        float boxX = boxMargin;
-        float boxY = boxMargin; // Jarak dari bawah
-        float boxWidth = virtualWidth - (boxMargin * 2); // Lebar penuh dikurangi margin kiri-kanan
+        // --- LOGIKA PERPINDAHAN BACKGROUND ---
+        // Jika dialog sudah sampai indeks ke-3 ("Siapa itu?!...")
+        if (dialogueIndex == 3) {
+            currentBackground = backgroundTexture2;
+        } else {
+            currentBackground = backgroundTexture1;
+        }
+
+        // --- GAMBAR BACKGROUND AKTIF ---
+        batch.begin();
+        batch.draw(currentBackground, 0, 0, virtualWidth, virtualHeight);
+        batch.end();
 
         // 1. Gambar Kotak Dialog
+        float boxHeight = virtualHeight * 0.25f; 
+        float boxMargin = 30; 
+        float boxX = boxMargin;
+        float boxY = boxMargin; 
+        float boxWidth = virtualWidth - (boxMargin * 2); 
+
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(new Color(0, 0, 0, 0.8f));
         shapeRenderer.rect(boxX, boxY, boxWidth, boxHeight);
@@ -119,31 +141,25 @@ public class LamentiaGame extends ApplicationAdapter {
             }
         }
 
-        // 3. Gambar Teks (Posisi disesuaikan dengan kotak virtual)
+        // 3. Gambar Teks
         batch.begin();
         font.setColor(Color.WHITE);
-        
-        float textX = boxX + 30; // Padding dalam kotak
-        float textY = boxY + boxHeight - 40; // Mulai dari atas kotak
-        float textWidthLimit = boxWidth - 60; // Batas lebar teks
+        float textX = boxX + 30; 
+        float textY = boxY + boxHeight - 40; 
+        float textWidthLimit = boxWidth - 60; 
 
         font.draw(batch, currentDisplay, textX, textY, textWidthLimit, Align.left, true);
         batch.end();
 
-        // 4. Gambar Indikator Panah (Disesuaikan posisinya di kotak virtual)
+        // 4. Gambar Indikator Panah
         if (charIndex >= fullText.length()) {
             blinkTimer += Gdx.graphics.getDeltaTime();
             if ((int)(blinkTimer * 2) % 2 == 0) {
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
                 shapeRenderer.setColor(Color.YELLOW);
-                
-                float arrowX = boxX + boxWidth - 50; // Pojok kanan kotak virtual
+                float arrowX = boxX + boxWidth - 50; 
                 float arrowY = boxY + 40;
-                shapeRenderer.triangle(
-                    arrowX, arrowY, 
-                    arrowX + 20, arrowY, 
-                    arrowX + 10, arrowY - 15
-                );
+                shapeRenderer.triangle(arrowX, arrowY, arrowX + 20, arrowY, arrowX + 10, arrowY - 15);
                 shapeRenderer.end();
             }
         }
@@ -151,7 +167,6 @@ public class LamentiaGame extends ApplicationAdapter {
 
     @Override
     public void resize(int width, int height) {
-        // --- SANGAT PENTING: Update viewport saat ukuran jendela berubah ---
         viewport.update(width, height);
     }
 
@@ -160,5 +175,8 @@ public class LamentiaGame extends ApplicationAdapter {
         batch.dispose();
         shapeRenderer.dispose();
         font.dispose();
+        // Hapus semua background dari memori
+        if (backgroundTexture1 != null) backgroundTexture1.dispose();
+        if (backgroundTexture2 != null) backgroundTexture2.dispose();
     }
 }
