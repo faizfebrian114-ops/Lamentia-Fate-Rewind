@@ -1,4 +1,4 @@
-package id.ac.unjani.lamentia;
+package lamentia;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;

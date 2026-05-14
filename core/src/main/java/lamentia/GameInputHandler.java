@@ -1,4 +1,4 @@
-package id.ac.unjani.lamentia;
+package lamentia;
 
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
