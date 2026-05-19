@@ -4,7 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import lamentia.screens.StoryScreen;
+import lamentia.screens.HomeScreen;
 
 public class LamentiaGame extends Game {
 
@@ -19,7 +19,7 @@ public class LamentiaGame extends Game {
         font = new BitmapFont();
         font.getData().setScale(1.5f);
 
-        setScreen(new StoryScreen(this));
+        setScreen(new HomeScreen(this));
     }
 
     @Override

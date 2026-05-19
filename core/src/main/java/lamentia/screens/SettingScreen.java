@@ -1,6 +1,7 @@
 package lamentia.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -15,29 +16,25 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import lamentia.LamentiaGame;
 
-public class HomeScreen implements Screen {
+public class SettingScreen implements Screen {
 
 	private final LamentiaGame game;
 	private final ShapeRenderer shapeRenderer;
 	private final OrthographicCamera camera;
 	private final Viewport viewport;
 	private final Vector3 touchPoint;
-	private final Rectangle playButton;
-	private final Rectangle continueButton;
-	private final Rectangle settingButton;
+	private final Rectangle backButton;
 	private final GlyphLayout glyphLayout;
 
-	private int hoveredButton = -1;
+	private boolean backHovered;
 
-	public HomeScreen(LamentiaGame game) {
+	public SettingScreen(LamentiaGame game) {
 		this.game = game;
 		this.shapeRenderer = new ShapeRenderer();
 		this.camera = new OrthographicCamera();
 		this.viewport = new FitViewport(1280, 720, camera);
 		this.touchPoint = new Vector3();
-		this.playButton = new Rectangle();
-		this.continueButton = new Rectangle();
-		this.settingButton = new Rectangle();
+		this.backButton = new Rectangle();
 		this.glyphLayout = new GlyphLayout();
 
 		viewport.apply();
@@ -58,24 +55,28 @@ public class HomeScreen implements Screen {
 			public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 				updateHoverState(screenX, screenY);
 
-				if (contains(playButton, screenX, screenY)) {
-					game.setScreen(new StoryScreen(game));
-					return true;
-				}
-
-				if (contains(settingButton, screenX, screenY)) {
-					game.setScreen(new SettingScreen(game));
-					return true;
+				if (contains(backButton, screenX, screenY)) {
+					game.setScreen(new HomeScreen(game));
 				}
 
 				return true;
+			}
+
+			@Override
+			public boolean keyDown(int keycode) {
+				if (keycode == Input.Keys.ESCAPE) {
+					game.setScreen(new HomeScreen(game));
+					return true;
+				}
+
+				return false;
 			}
 		});
 	}
 
 	@Override
 	public void render(float delta) {
-		ScreenUtils.clear(0.07f, 0.08f, 0.12f, 1f);
+		ScreenUtils.clear(0.09f, 0.09f, 0.11f, 1f);
 
 		camera.update();
 		game.batch.setProjectionMatrix(camera.combined);
@@ -84,46 +85,29 @@ public class HomeScreen implements Screen {
 		float virtualWidth = viewport.getWorldWidth();
 		float virtualHeight = viewport.getWorldHeight();
 
-		float buttonWidth = 320f;
-		float buttonHeight = 72f;
-		float buttonGap = 18f;
-		float buttonStartX = (virtualWidth - buttonWidth) / 2f;
-		float buttonStartY = (virtualHeight / 2f) - buttonHeight;
+		float buttonWidth = 240f;
+		float buttonHeight = 68f;
+		float buttonX = (virtualWidth - buttonWidth) / 2f;
+		float buttonY = 120f;
 
-		playButton.set(buttonStartX, buttonStartY, buttonWidth, buttonHeight);
-		continueButton.set(buttonStartX, buttonStartY - (buttonHeight + buttonGap), buttonWidth, buttonHeight);
-		settingButton.set(buttonStartX, buttonStartY - ((buttonHeight + buttonGap) * 2f), buttonWidth, buttonHeight);
+		backButton.set(buttonX, buttonY, buttonWidth, buttonHeight);
 
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		shapeRenderer.setColor(new Color(0.12f, 0.13f, 0.18f, 1f));
+		shapeRenderer.setColor(new Color(0.10f, 0.11f, 0.16f, 1f));
 		shapeRenderer.rect(0f, 0f, virtualWidth, virtualHeight);
 
-		drawButton(playButton, hoveredButton == 0, new Color(0.22f, 0.36f, 0.62f, 1f));
-		drawButton(continueButton, hoveredButton == 1, new Color(0.24f, 0.24f, 0.26f, 1f));
-		drawButton(settingButton, hoveredButton == 2, new Color(0.22f, 0.36f, 0.62f, 1f));
+		shapeRenderer.setColor(backHovered ? new Color(0.28f, 0.44f, 0.74f, 1f) : new Color(0.22f, 0.24f, 0.30f, 1f));
+		shapeRenderer.rect(backButton.x, backButton.y, backButton.width, backButton.height);
 		shapeRenderer.end();
 
 		game.batch.begin();
 		game.font.setColor(Color.WHITE);
 
-		drawCenteredText("LAMENTIA", virtualWidth / 2f, virtualHeight - 90f);
-		drawCenteredText("FATE REWIND", virtualWidth / 2f, virtualHeight - 130f);
-
-		drawCenteredText("PLAY", playButton.x + (playButton.width / 2f), playButton.y + 46f);
-		drawCenteredText("CONTINUE", continueButton.x + (continueButton.width / 2f), continueButton.y + 46f);
-		drawCenteredText("SETTING", settingButton.x + (settingButton.width / 2f), settingButton.y + 46f);
+		drawCenteredText("SETTING", virtualWidth / 2f, virtualHeight - 90f);
+		drawCenteredText("Placeholder untuk pengaturan game.", virtualWidth / 2f, virtualHeight / 2f + 10f);
+		drawCenteredText("BACK", backButton.x + (backButton.width / 2f), backButton.y + 44f);
 
 		game.batch.end();
-	}
-
-	private void drawButton(Rectangle button, boolean hovered, Color baseColor) {
-		if (hovered) {
-			shapeRenderer.setColor(baseColor.r + 0.08f, baseColor.g + 0.08f, baseColor.b + 0.08f, 1f);
-		} else {
-			shapeRenderer.setColor(baseColor);
-		}
-
-		shapeRenderer.rect(button.x, button.y, button.width, button.height);
 	}
 
 	private void drawCenteredText(String text, float centerX, float centerY) {
@@ -133,16 +117,7 @@ public class HomeScreen implements Screen {
 
 	private void updateHoverState(int screenX, int screenY) {
 		viewport.unproject(touchPoint.set(screenX, screenY, 0f));
-
-		if (playButton.contains(touchPoint.x, touchPoint.y)) {
-			hoveredButton = 0;
-		} else if (continueButton.contains(touchPoint.x, touchPoint.y)) {
-			hoveredButton = 1;
-		} else if (settingButton.contains(touchPoint.x, touchPoint.y)) {
-			hoveredButton = 2;
-		} else {
-			hoveredButton = -1;
-		}
+		backHovered = backButton.contains(touchPoint.x, touchPoint.y);
 	}
 
 	private boolean contains(Rectangle rectangle, int screenX, int screenY) {
