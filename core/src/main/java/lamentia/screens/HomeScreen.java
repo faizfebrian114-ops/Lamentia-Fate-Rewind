@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.graphics.Texture;
 
 import lamentia.LamentiaGame;
 
@@ -25,10 +26,13 @@ public class HomeScreen implements Screen {
 	private final Rectangle playButton;
 	private final Rectangle continueButton;
 	private final Rectangle settingButton;
+	private final Rectangle inventoryButton;
 	private final GlyphLayout glyphLayout;
+	private final Texture background;
 
 	private int hoveredButton = -1;
 
+	//membuat objek
 	public HomeScreen(LamentiaGame game) {
 		this.game = game;
 		this.shapeRenderer = new ShapeRenderer();
@@ -38,7 +42,9 @@ public class HomeScreen implements Screen {
 		this.playButton = new Rectangle();
 		this.continueButton = new Rectangle();
 		this.settingButton = new Rectangle();
+		this.inventoryButton = new Rectangle();
 		this.glyphLayout = new GlyphLayout();
+		this.background = new Texture("sumber_daya_background/bg.jpeg");
 
 		viewport.apply();
 		camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0f);
@@ -84,8 +90,13 @@ public class HomeScreen implements Screen {
 		float virtualWidth = viewport.getWorldWidth();
 		float virtualHeight = viewport.getWorldHeight();
 
+		// TODO: Gambar background di sini, contoh:
+		game.batch.begin();
+		game.batch.draw(background, 0f, 0f, virtualWidth, virtualHeight);
+		game.batch.end();
+
 		float buttonWidth = 320f;
-		float buttonHeight = 72f;
+		float buttonHeight = 65f;
 		float buttonGap = 18f;
 		float buttonStartX = (virtualWidth - buttonWidth) / 2f;
 		float buttonStartY = (virtualHeight / 2f) - buttonHeight;
@@ -93,14 +104,16 @@ public class HomeScreen implements Screen {
 		playButton.set(buttonStartX, buttonStartY, buttonWidth, buttonHeight);
 		continueButton.set(buttonStartX, buttonStartY - (buttonHeight + buttonGap), buttonWidth, buttonHeight);
 		settingButton.set(buttonStartX, buttonStartY - ((buttonHeight + buttonGap) * 2f), buttonWidth, buttonHeight);
+		inventoryButton.set(buttonStartX, buttonStartY - ((buttonHeight + buttonGap) * 3f), buttonWidth, buttonHeight);
 
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		shapeRenderer.setColor(new Color(0.12f, 0.13f, 0.18f, 1f));
-		shapeRenderer.rect(0f, 0f, virtualWidth, virtualHeight);
+		// shapeRenderer.setColor(new Color(0f, 0f, 0f, 0.3f));
+		// shapeRenderer.rect(0f, 0f, virtualWidth, virtualHeight);
 
 		drawButton(playButton, hoveredButton == 0, new Color(0.22f, 0.36f, 0.62f, 1f));
 		drawButton(continueButton, hoveredButton == 1, new Color(0.24f, 0.24f, 0.26f, 1f));
 		drawButton(settingButton, hoveredButton == 2, new Color(0.22f, 0.36f, 0.62f, 1f));
+		drawButton(inventoryButton, hoveredButton == 3, new Color(0.22f, 0.36f, 0.62f, 1f));
 		shapeRenderer.end();
 
 		game.batch.begin();
@@ -109,9 +122,10 @@ public class HomeScreen implements Screen {
 		drawCenteredText("LAMENTIA", virtualWidth / 2f, virtualHeight - 90f);
 		drawCenteredText("FATE REWIND", virtualWidth / 2f, virtualHeight - 130f);
 
-		drawCenteredText("PLAY", playButton.x + (playButton.width / 2f), playButton.y + 46f);
-		drawCenteredText("CONTINUE", continueButton.x + (continueButton.width / 2f), continueButton.y + 46f);
-		drawCenteredText("SETTING", settingButton.x + (settingButton.width / 2f), settingButton.y + 46f);
+		drawCenteredText("MULAI", playButton.x + (playButton.width / 2f), playButton.y + 40f);
+		drawCenteredText("LANJUT", continueButton.x + (continueButton.width / 2f), continueButton.y + 40f);
+		drawCenteredText("PENGATURAN", settingButton.x + (settingButton.width / 2f), settingButton.y + 40f);
+		drawCenteredText("PENYIMPANAN", inventoryButton.x + (inventoryButton.width / 2f), inventoryButton.y + 40f);
 
 		game.batch.end();
 	}
@@ -140,7 +154,10 @@ public class HomeScreen implements Screen {
 			hoveredButton = 1;
 		} else if (settingButton.contains(touchPoint.x, touchPoint.y)) {
 			hoveredButton = 2;
-		} else {
+		} else if (inventoryButton.contains(touchPoint.x, touchPoint.y)) {
+			hoveredButton = 3;
+		}
+		else {
 			hoveredButton = -1;
 		}
 	}
@@ -166,6 +183,7 @@ public class HomeScreen implements Screen {
 
 	@Override
 	public void dispose() {
+		background.dispose();
 		shapeRenderer.dispose();
 	}
 }
