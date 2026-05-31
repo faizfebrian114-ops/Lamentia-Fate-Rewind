@@ -24,6 +24,9 @@ public class LamentiaGame extends ApplicationAdapter {
     Texture backgroundTexture1;
     Texture currentBackground; 
 
+    // --- VARIABEL INVENTORY BARU ---
+    Inventory inventory;
+
     // --- STATE SYSTEM GAME ---
     enum GameState {
         ACT_1,
@@ -33,12 +36,13 @@ public class LamentiaGame extends ApplicationAdapter {
         GOOD_ENDING,
         BAD_BAD_ENDING
     }
+    
     GameState currentState = GameState.ACT_1;
 
     // --- MEKANIK UNTUK ENDING (Sesuai PDF) ---
     int fateRewindCount = 0; // Jika >= 4 akan memicu Bad Ending di akhir game
 
-    // ================= DAFATAR DIALOG PER ACT =================
+    // ================= DAFTAR DIALOG PER ACT =================
     
     // ACT 1: Kehilangan
     String[] act1Dialogues = {
@@ -109,6 +113,12 @@ public class LamentiaGame extends ApplicationAdapter {
         font = new BitmapFont();
         font.getData().setScale(1.5f);
 
+        // --- INISIALISASI INVENTORY BARU ---
+        inventory = new Inventory();
+        
+        // Seta otomatis mulai game membawa Artefak dari Dewi (Act 1)
+        inventory.addItem(new Item("artefak_takdir", "Artefak Takdir", "ARTEFAK", "Bisa memutarbalikkan waktu dengan bayaran kewarasan."));
+
         backgroundTexture1 = new Texture("sumber_daya_background/Screenshot 2026-05-13 145716.png");
         currentBackground = backgroundTexture1;
 
@@ -165,13 +175,21 @@ public class LamentiaGame extends ApplicationAdapter {
         switch (currentState) {
             case ACT_1:
                 currentState = GameState.ACT_2_BATTLE_INTRO;
+                
+                // Tambahkan Kartu Aldric ke inventory saat masuk ke Act 2
+                inventory.addItem(new Item("card_aldric", "Kartu Aldric (Prajurit)", "KARTU", "Dulu seorang petani yang mencari upah demi anaknya yang sakit."));
+                
+                // Tampilkan isi tas Seta di console Eclipse setelah update item
+                inventory.printInventory();
                 break;
+                
             case ACT_2_BATTLE_INTRO:
                 // Simulasi: Berpura-pura pemain menggunakan Fate Rewind sebanyak 4 kali untuk testing Bad End
                 // Ubah angka ini menjadi kurang dari 4 untuk melihat Good Ending
                 fateRewindCount = 4; 
                 currentState = GameState.ACT_3_CASTLE;
                 break;
+                
             case ACT_3_CASTLE:
                 // Evaluasi Poin Takdir / Kewarasan Seta sesuai spesifikasi mekanik naskah
                 if (fateRewindCount >= 4) {
@@ -180,6 +198,7 @@ public class LamentiaGame extends ApplicationAdapter {
                     currentState = GameState.GOOD_ENDING;
                 }
                 break;
+                
             default:
                 System.out.println("Game Over. Kembali ke Main Menu.");
                 currentState = GameState.ACT_1; // Loop kembali ke awal
